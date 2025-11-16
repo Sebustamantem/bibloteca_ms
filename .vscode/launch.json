@@ -1,0 +1,44 @@
+{
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Spring Boot-MicroserviceConfigApplication<microservice-config>",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "mainClass": "com.microservice.config.MicroserviceConfigApplication",
+      "projectName": "microservice-config",
+      "args": "",
+      "envFile": "${workspaceFolder}/.env"
+    },
+    {
+      "type": "java",
+      "name": "Spring Boot-MicroserviceEurekaApplication<microservice-eureka>",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "mainClass": "com.microservice.eureka.MicroserviceEurekaApplication",
+      "projectName": "microservice-eureka",
+      "args": "",
+      "envFile": "${workspaceFolder}/.env"
+    },
+    {
+      "type": "java",
+      "name": "Spring Boot-MicroserviceGatewayApplication<microservice-gateway>",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "mainClass": "com.microservice.gateway.MicroserviceGatewayApplication",
+      "projectName": "microservice-gateway",
+      "args": "",
+      "envFile": "${workspaceFolder}/.env"
+    },
+    {
+      "type": "java",
+      "name": "Spring Boot-MicroserviceLibrosApplication<microservice-libros>",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "mainClass": "com.microservice.libros.MicroserviceLibrosApplication",
+      "projectName": "microservice-libros",
+      "args": "",
+      "envFile": "${workspaceFolder}/.env"
+    }
+  ]
+}
