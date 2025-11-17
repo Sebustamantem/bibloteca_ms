@@ -17,7 +17,7 @@
         <module>microservice-config</module>
         <module>microservice-gateway</module>
         <module>microservice-libros</module>
-        <!-- agrega más si tienes otros microservicios -->
+   
     </modules>
 
     <!-- SPRING BOOT -->

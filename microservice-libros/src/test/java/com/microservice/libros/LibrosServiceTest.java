@@ -16,20 +16,26 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-// 🔥 ESTA LÍNEA ELIMINA TODOS LOS FALSE POSITIVES DE NULL TYPE SAFETY
+// 🔥 Evita falsos positivos de Null Type Safety en VSCode
 @SuppressWarnings("all")
 class LibrosServiceTest {
 
     private LibrosRepository librosRepository;
     private LibrosService librosService;
 
+    // ============================================================
+    // 🔧 Configuración inicial para cada test
+    // ============================================================
     @BeforeEach
     void setUp() {
-        librosRepository = mock(LibrosRepository.class);
-        librosService = new LibrosService(librosRepository);
+        librosRepository = mock(LibrosRepository.class);  // Se simula el repositorio
+        librosService = new LibrosService(librosRepository); // Se inyecta el mock al servicio
         MockitoAnnotations.openMocks(this);
     }
 
+    // ============================================================
+    // Método auxiliar para generar libros de prueba
+    // ============================================================
     private Libros libroMock(Integer id) {
         return new Libros(
                 id,
@@ -47,25 +53,28 @@ class LibrosServiceTest {
     }
 
     // ============================================================
-    // GET ALL
+    //  TEST: Obtener lista de libros
     // ============================================================
     @Test
     void testGetAllLibros() {
+
+        // Simulamos que el repositorio retorna 2 libros
         when(librosRepository.findAll())
                 .thenReturn(List.of(libroMock(1), libroMock(2)));
 
         List<Libros> result = librosService.getAllLibros();
 
         assertNotNull(result);
-        assertEquals(2, result.size());
+        assertEquals(2, result.size()); // Debe haber 2 libros
         verify(librosRepository, times(1)).findAll();
     }
 
     // ============================================================
-    // GET BY ID FOUND
+    // TEST: Buscar libro por ID (encontrado)
     // ============================================================
     @Test
     void testGetLibroByIdFound() {
+
         when(librosRepository.findById(1))
                 .thenReturn(Optional.of(libroMock(1)));
 
@@ -76,10 +85,11 @@ class LibrosServiceTest {
     }
 
     // ============================================================
-    // GET BY ID NOT FOUND
+    //  TEST: Buscar libro por ID (NO encontrado)
     // ============================================================
     @Test
     void testGetLibroByIdNotFound() {
+
         when(librosRepository.findById(999))
                 .thenReturn(Optional.empty());
 
@@ -89,11 +99,12 @@ class LibrosServiceTest {
     }
 
     // ============================================================
-    // CREATE LIBRO
+    // TEST: Crear libro
     // ============================================================
     @Test
     void testCreateLibro() {
-        Libros libro = libroMock(null);
+
+        Libros libro = libroMock(null); // Libro nuevo sin ID
 
         when(librosRepository.save(libro)).thenReturn(libro);
 
@@ -104,10 +115,11 @@ class LibrosServiceTest {
     }
 
     // ============================================================
-    // DELETE — FOUND
+    // TEST: Eliminar libro (encontrado)
     // ============================================================
     @Test
     void testDeleteLibroSuccess() {
+
         Libros libro = libroMock(1);
 
         when(librosRepository.findById(1)).thenReturn(Optional.of(libro));
@@ -119,10 +131,11 @@ class LibrosServiceTest {
     }
 
     // ============================================================
-    // DELETE — NOT FOUND
+    // TEST: Eliminar libro (NO encontrado)
     // ============================================================
     @Test
     void testDeleteLibroNotFound() {
+
         when(librosRepository.findById(1)).thenReturn(Optional.empty());
 
         Optional<Libros> deleted = librosService.deleteLibroAndReturn(1);
@@ -132,12 +145,13 @@ class LibrosServiceTest {
     }
 
     // ============================================================
-    // UPDATE FULL — SUCCESS
+    //  TEST: Actualizar libro completo (SUCCESS)
     // ============================================================
     @Test
     void testUpdateLibroSuccess() {
+
         Libros original = libroMock(1);
-        Libros nuevo = libroMock(null);
+        Libros nuevo = libroMock(null); // Datos nuevos
 
         when(librosRepository.findById(1)).thenReturn(Optional.of(original));
         when(librosRepository.save(original)).thenReturn(original);
@@ -150,10 +164,11 @@ class LibrosServiceTest {
     }
 
     // ============================================================
-    // UPDATE FULL — NOT FOUND
+    // TEST: Actualizar libro completo (NOT FOUND)
     // ============================================================
     @Test
     void testUpdateLibroNotFound() {
+
         when(librosRepository.findById(1)).thenReturn(Optional.empty());
 
         assertThrows(
@@ -163,10 +178,11 @@ class LibrosServiceTest {
     }
 
     // ============================================================
-    // PATCH STOCK — SUCCESS
+    // TEST: Actualizar stock (SUCCESS)
     // ============================================================
     @Test
     void testUpdateStockSuccess() {
+
         Libros libro = libroMock(1);
 
         when(librosRepository.findById(1)).thenReturn(Optional.of(libro));
@@ -180,10 +196,11 @@ class LibrosServiceTest {
     }
 
     // ============================================================
-    // PATCH STOCK — NOT FOUND
+    // TEST: Actualizar stock (NOT FOUND)
     // ============================================================
     @Test
     void testUpdateStockNotFound() {
+
         when(librosRepository.findById(1)).thenReturn(Optional.empty());
 
         assertThrows(
