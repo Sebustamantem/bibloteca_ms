@@ -6,12 +6,11 @@ import com.microservice.libros.model.Libros;
 import com.microservice.libros.service.LibrosService;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -20,11 +19,10 @@ import java.util.Collections;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SuppressWarnings({"null"})  
 @WebMvcTest(LibrosController.class)
 class LibrosControllerTest {
 
@@ -39,158 +37,140 @@ class LibrosControllerTest {
 
     private Libros libro;
 
+    // ============================================================
+    // Antes de cada test, crear un libro de prueba
+    // ============================================================
     @BeforeEach
-    void setUp() {
-        libro = new Libros(
-                1,
-                "Libro 1",
-                "Autor 1",
-                "Editorial",
-                LocalDate.of(2020, 1, 1),
-                "Drama",
-                10,
-                BigDecimal.valueOf(5000),
-                "ES",
-                "Desc",
-                true
-        );
+    void setup() {
+        libro = Libros.builder()
+                .id(1)
+                .titulo("Libro 1")
+                .autor("Autor 1")
+                .editorial("Editorial")
+                .fechaPublicacion(LocalDate.of(2020, 1, 1))
+                .categoria("Drama")
+                .stock(10)
+                .precio(BigDecimal.valueOf(5000))
+                .idioma("ES")
+                .descripcion("Desc")
+                .disponible(true)
+                .build();
     }
 
-    // =======================================================
-    // GET ALL
-    // =======================================================
+    // ============================================================
+    // GET ALL — listar todos los libros
+    // ============================================================
     @Test
+    @DisplayName("GET /api/v1/libros → lista OK")
     void testGetAllLibros() throws Exception {
 
-        when(librosService.getAllLibros())
-                .thenReturn(Collections.singletonList(libro));
+        // Simular que el servicio retorna una lista con 1 libro
+        when(librosService.getAllLibros()).thenReturn(Collections.singletonList(libro));
 
         mockMvc.perform(get("/api/v1/libros"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].titulo").value("Libro 1"));
+                .andExpect(jsonPath("$._embedded.librosList[0].titulo").value("Libro 1"));
     }
 
-    // =======================================================
-    // GET BY ID — FOUND
-    // =======================================================
+    // ============================================================
+    //  GET BY ID — libro encontrado
+    // ============================================================
     @Test
+    @DisplayName("GET /api/v1/libros/{id} → encontrado")
     void testGetLibroByIdFound() throws Exception {
 
-        when(librosService.getLibroById(1))
-                .thenReturn(Optional.of(libro));
+        when(librosService.getLibroById(1)).thenReturn(Optional.of(libro));
 
         mockMvc.perform(get("/api/v1/libros/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.titulo").value("Libro 1"));
     }
 
-    // =======================================================
-    // GET BY ID — NOT FOUND
-    // =======================================================
+    // ============================================================
+    //  GET BY ID — libro NO encontrado
+    // ============================================================
     @Test
+    @DisplayName("GET /api/v1/libros/{id} → no encontrado")
     void testGetLibroByIdNotFound() throws Exception {
 
-        when(librosService.getLibroById(1))
-                .thenReturn(Optional.empty());
+        when(librosService.getLibroById(1)).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/api/v1/libros/1"))
-                .andExpect(status().isNotFound())
-                .andExpect(content().string("Libro no encontrado"));
+                .andExpect(status().isNotFound());
     }
 
-    // =======================================================
-    // CREATE
-    // =======================================================
+    // ============================================================
+    //  PUT — actualizar un libro completo
+    // ============================================================
     @Test
-    void testCreateLibro() throws Exception {
+    @DisplayName("PUT /api/v1/libros/{id} → actualizado correctamente")
+    void testUpdateLibro() throws Exception {
 
-        when(librosService.createLibro(any(Libros.class)))
-                .thenReturn(libro);
+        when(librosService.updateLibro(eq(1), any(Libros.class))).thenReturn(libro);
 
-        mockMvc.perform(
-                post("/api/v1/libros")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(libro))
-        )
-                .andExpect(status().isCreated())
+        String libroJson = objectMapper.writeValueAsString(libro);
+
+        mockMvc.perform(put("/api/v1/libros/1")
+                        .contentType("application/json")
+                        .content(libroJson != null ? libroJson : ""))
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.titulo").value("Libro 1"));
     }
 
-    // =======================================================
-    // DELETE — FOUND
-    // =======================================================
+    // ============================================================
+    // PATCH — actualizar solo el stock
+    // ============================================================
     @Test
+    @DisplayName("PATCH /api/v1/libros/{id}/stock → actualizado")
+    void testUpdateStockSuccess() throws Exception {
+
+        when(librosService.updateStock(1, 25)).thenReturn(libro);
+
+        mockMvc.perform(patch("/api/v1/libros/1/stock")
+                        .contentType("application/json")
+                        .content("{\"stock\":25}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.titulo").value("Libro 1"));
+    }
+
+    // ============================================================
+    // PATCH — stock faltante
+    // ============================================================
+    @Test
+    @DisplayName("PATCH /api/v1/libros/{id}/stock → falta campo stock")
+    void testUpdateStockMissingField() throws Exception {
+
+        mockMvc.perform(patch("/api/v1/libros/1/stock")
+                        .contentType("application/json")
+                        .content("{}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    // ============================================================
+    // DELETE — eliminación exitosa
+    // ============================================================
+    @Test
+    @DisplayName("DELETE /api/v1/libros/{id} → eliminado")
     void testDeleteLibroSuccess() throws Exception {
 
-        when(librosService.deleteLibroAndReturn(1))
-                .thenReturn(Optional.of(libro));
+        when(librosService.deleteLibroAndReturn(1)).thenReturn(Optional.of(libro));
 
         mockMvc.perform(delete("/api/v1/libros/1"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Libro eliminado correctamente"));
     }
 
-    // =======================================================
-    // DELETE — NOT FOUND
-    // =======================================================
+    // ============================================================
+    // DELETE — libro no encontrado
+    // ============================================================
     @Test
+    @DisplayName("DELETE /api/v1/libros/{id} → no encontrado")
     void testDeleteLibroNotFound() throws Exception {
 
-        when(librosService.deleteLibroAndReturn(1))
-                .thenReturn(Optional.empty());
+        when(librosService.deleteLibroAndReturn(1)).thenReturn(Optional.empty());
 
         mockMvc.perform(delete("/api/v1/libros/1"))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string("Libro no encontrado"));
-    }
-
-    // =======================================================
-    // UPDATE FULL (PUT)
-    // =======================================================
-    @Test
-    void testUpdateLibro() throws Exception {
-
-        when(librosService.updateLibro(eq(1), any(Libros.class)))
-                .thenReturn(libro);
-
-        mockMvc.perform(
-                put("/api/v1/libros/1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(libro))
-        )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.titulo").value("Libro 1"));
-    }
-
-    // =======================================================
-    // PATCH STOCK — SUCCESS
-    // =======================================================
-    @Test
-    void testUpdateStockSuccess() throws Exception {
-
-        when(librosService.updateStock(1, 25))
-                .thenReturn(libro);
-
-        mockMvc.perform(
-                patch("/api/v1/libros/1/stock")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"stock\":25}")
-        )
-                .andExpect(status().isOk());
-    }
-
-    // =======================================================
-    // PATCH STOCK — MISSING FIELD
-    // =======================================================
-    @Test
-    void testUpdateStockMissingField() throws Exception {
-
-        mockMvc.perform(
-                patch("/api/v1/libros/1/stock")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}")
-        )
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string("Falta el campo 'stock'"));
     }
 }

@@ -19,7 +19,7 @@ public class LibrosService {
     }
 
     // ============================================================
-    // 🚨 Excepción personalizada
+    //  Excepción personalizada
     // ============================================================
     public static class LibroNotFoundException extends RuntimeException {
         public LibroNotFoundException(String msg) {
@@ -28,21 +28,21 @@ public class LibrosService {
     }
 
     // ============================================================
-    // 📘 Obtener todos los libros
+    //  Obtener todos los libros
     // ============================================================
     public List<Libros> getAllLibros() {
         return librosRepository.findAll();
     }
 
     // ============================================================
-    // 🔍 Buscar libro por ID
+    //  Buscar libro por ID
     // ============================================================
     public Optional<Libros> getLibroById(int id) {
         return librosRepository.findById(id);
     }
 
     // ============================================================
-    // ➕ Crear libro
+    //  Crear libro
     // ============================================================
 @Transactional
 public Libros createLibro(Libros libro) {
@@ -76,7 +76,7 @@ public Libros createLibro(Libros libro) {
     }
 
     // ============================================================
-    // 🔄 Actualizar libro COMPLETO (PUT)
+    // Actualizar libro COMPLETO (PUT)
     // ============================================================
     @Transactional
     public Libros updateLibro(int id, Libros data) {
@@ -99,7 +99,7 @@ public Libros createLibro(Libros libro) {
     }
 
     // ============================================================
-    // 🔁 PATCH — actualizar solo stock
+    //  PATCH — actualizar solo stock
     // ============================================================
     @Transactional
     public Libros updateStock(int id, int nuevoStock) {
